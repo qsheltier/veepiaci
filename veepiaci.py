@@ -80,7 +80,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
     @QtCore.Slot()
     def choose_checksum_file(self):
         (checksum_file, _) = QtWidgets.QFileDialog.getOpenFileName(self, "Select Checksum File")
-        if checksum_file is not None:
+        if (checksum_file is not None) and (checksum_file != ""):
             self.set_checksum_file(checksum_file)
 
     def set_checksum_file(self, checksum_file):
@@ -91,7 +91,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
     @QtCore.Slot()
     def choose_directory(self):
         directory = QtWidgets.QFileDialog.getExistingDirectory(self)
-        if directory is not None:
+        if (directory is not None) and (directory != ""):
             self.set_directory(directory)
 
     def set_directory(self, directory):
@@ -102,7 +102,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
     @QtCore.Slot()
     def choose_result_file(self):
         (result_file, _) = QtWidgets.QFileDialog.getSaveFileName(self, "Select Result File")
-        if result_file is not None:
+        if (result_file is not None) and (result_file != ""):
             self.set_result_file(result_file)
 
     def set_result_file(self, result_file):
