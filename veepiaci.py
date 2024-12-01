@@ -53,12 +53,13 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
 
         window_layout.setRowStretch(3, 1)
 
-        start_verification_button = QtWidgets.QPushButton("Start Verification")
+        self.start_verification_button = QtWidgets.QPushButton("Start Verification")
+        self.check_if_start_button_can_be_active()
 
         button_box = QtWidgets.QWidget()
         button_box_layout = QtWidgets.QHBoxLayout(button_box)
         button_box_layout.addStretch(1)
-        button_box_layout.addWidget(start_verification_button)
+        button_box_layout.addWidget(self.start_verification_button)
         window_layout.addWidget(button_box, 4, 0)
 
     @staticmethod
@@ -83,6 +84,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
     def set_checksum_file(self, checksum_file):
         self.settings.checksumFile = checksum_file
         self.checksumFileField.setText(checksum_file)
+        self.check_if_start_button_can_be_active()
 
     @QtCore.Slot()
     def choose_directory(self):
@@ -93,6 +95,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
     def set_directory(self, directory):
         self.settings.directory = directory
         self.directoryField.setText(directory)
+        self.check_if_start_button_can_be_active()
 
     @QtCore.Slot()
     def choose_result_file(self):
@@ -103,6 +106,15 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
     def set_result_file(self, result_file):
         self.settings.resultFile = result_file
         self.verificationResultFileField.setText(result_file)
+        self.check_if_start_button_can_be_active()
+
+    def check_if_start_button_can_be_active(self):
+        button_can_be_active = True
+        button_can_be_active = button_can_be_active and (self.settings.checksumFile != "")
+        button_can_be_active = button_can_be_active and (self.settings.directory != "")
+        button_can_be_active = button_can_be_active and (self.settings.resultFile != "")
+        self.start_verification_button.setEnabled(button_can_be_active)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
