@@ -2,11 +2,13 @@ import sys
 
 from PySide6 import QtCore, QtWidgets
 
+
 class VeepiaciSettings:
     def __init__(self):
         self.checksumFile = ""
         self.directory = ""
         self.resultFile = ""
+
 
 class VeepiaciMainWindow(QtWidgets.QMainWindow):
     def __init__(self, settings: VeepiaciSettings):
