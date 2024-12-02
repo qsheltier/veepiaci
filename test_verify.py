@@ -83,3 +83,13 @@ class VerifyTest(unittest.TestCase):
             checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427e"}, "data.dat": {"md5": "e2c865db4162bed963bfaa9ef6ac18f0"}})
             verify.verify_checksums(checksum_file, temp_directory, lambda f, h: hashed_files.append(f))
             self.assertEqual(hashed_files, ["data.dat"])
+
+    def test_verify_calls_finish_handler_after_files(self):
+        events = []
+        with tempfile.TemporaryDirectory() as temp_directory:
+            create_empty_file(temp_directory)
+            create_file_with_data(temp_directory)
+            checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427e"}, "data.dat": {"md5": "e2c865db4162bed963bfaa9ef6ac18f0"}})
+            verify.verify_checksums(checksum_file, temp_directory, on_file_hashed=lambda f, h: events.append(f), on_finished=lambda: events.append("finish"))
+            self.assertCountEqual(events, ["empty.dat", "data.dat", "finish"])
+            self.assertEqual(events[-1], "finish")

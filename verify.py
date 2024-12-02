@@ -3,7 +3,7 @@ import os
 import hash
 
 
-def verify_checksums(checksum_file, directory, on_file_hashed = None):
+def verify_checksums(checksum_file, directory, on_file_hashed=None, on_finished=None):
     existing_files = collect_files(directory)
     files_with_checksum = checksum_file.file_checksums.keys()
     missing_files = [file for file in filter(lambda f: f not in existing_files, files_with_checksum)]
@@ -18,6 +18,8 @@ def verify_checksums(checksum_file, directory, on_file_hashed = None):
         for (hash_to_check) in existing_hashes:
             if file_hash[hash_to_check] != existing_hashes[hash_to_check]:
                 mismatches.append(existing_file)
+    if on_finished is not None:
+        on_finished()
     return VerificationResult(mismatches, missing_files, additional_files)
 
 
