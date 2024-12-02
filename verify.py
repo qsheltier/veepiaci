@@ -18,7 +18,7 @@ def verify_checksums(checksum_file, directory, on_file_hashed = None):
         for (hash_to_check) in existing_hashes:
             if file_hash[hash_to_check] != existing_hashes[hash_to_check]:
                 mismatches.append(existing_file)
-    return VerifyResult(mismatches, missing_files, additional_files)
+    return VerificationResult(mismatches, missing_files, additional_files)
 
 
 def collect_files(directory):
@@ -30,7 +30,7 @@ def collect_files(directory):
     return file_list
 
 
-class VerifyResult:
+class VerificationResult:
     def __init__(self, mismatches: list, missing_files: list, additional_files: list):
         self.mismatches = mismatches
         self.missing_files = missing_files
