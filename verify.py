@@ -18,9 +18,10 @@ def verify_checksums(checksum_file, directory, on_file_hashed=None, on_finished=
         for (hash_to_check) in existing_hashes:
             if file_hash[hash_to_check] != existing_hashes[hash_to_check]:
                 mismatches.append(existing_file)
+    verification_result = VerificationResult(mismatches, missing_files, additional_files)
     if on_finished is not None:
-        on_finished()
-    return VerificationResult(mismatches, missing_files, additional_files)
+        on_finished(verification_result)
+    return verification_result
 
 
 def collect_files(directory):
