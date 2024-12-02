@@ -25,6 +25,6 @@ def read_checksum_file(filename):
         for line in file:
             line_parts = line.split(" ", 1)
             checksum = line_parts[0]
-            checked_file = line_parts[1].strip().removeprefix("*")
+            checked_file = line_parts[1].strip().removeprefix("*").replace("\\", "/")
             file_checksums[checked_file] = {"md5": checksum}
     return ChecksumFile("UltraISO", file_checksums)
