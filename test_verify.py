@@ -27,6 +27,9 @@ class VerifyTest(unittest.TestCase):
             checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427f"}, "data.dat": {"md5": "e2c865db4162bed963bfaa9ef6ac18f0"}})
             verify_result = verify.verify_checksums(checksum_file, temp_directory)
             self.assertFalse(verify_result.success)
+            self.assertEqual(verify_result.mismatches, ["empty.dat"])
+            self.assertEqual(verify_result.missing_files, [])
+            self.assertEqual(verify_result.additional_files, [])
 
     def test_verify_reports_failure_when_a_file_is_missing(self):
         with tempfile.TemporaryDirectory() as temp_directory:
@@ -35,6 +38,9 @@ class VerifyTest(unittest.TestCase):
             checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427e"}, "data.dat": {"md5": "e2c865db4162bed963bfaa9ef6ac18f0"}})
             verify_result = verify.verify_checksums(checksum_file, temp_directory)
             self.assertFalse(verify_result.success)
+            self.assertEqual(verify_result.mismatches, [])
+            self.assertEqual(verify_result.missing_files, ["data.dat"])
+            self.assertEqual(verify_result.additional_files, [])
 
     def test_verify_reports_failure_when_an_additional_file_is_present(self):
         with tempfile.TemporaryDirectory() as temp_directory:
@@ -45,3 +51,6 @@ class VerifyTest(unittest.TestCase):
             checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427e"}})
             verify_result = verify.verify_checksums(checksum_file, temp_directory)
             self.assertFalse(verify_result.success)
+            self.assertEqual(verify_result.mismatches, [])
+            self.assertEqual(verify_result.missing_files, [])
+            self.assertEqual(verify_result.additional_files, ["data.dat"])
