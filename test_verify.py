@@ -1,5 +1,6 @@
 import os
 import tempfile
+import unicodedata
 import unittest
 
 import verify
@@ -111,3 +112,11 @@ class VerifyTest(unittest.TestCase):
             checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427e"}, "data.dat": {"md5": "e2c865db4162bed963bfaa9ef6ac18f0"}})
             result = verify.verify_checksums(checksum_file, temp_directory, on_finished=lambda r: result_from_event.append(r))
             self.assertEqual(result_from_event[0], result)
+
+    def test_verify_matches_files_with_umlauts_correctly(self):
+        with tempfile.TemporaryDirectory() as temp_directory:
+            create_empty_file(temp_directory)
+            create_file_with_data(temp_directory, unicodedata.normalize("NFD", "ümläut.txt"))
+            checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427e"}, "ümläut.txt": {"md5": "e2c865db4162bed963bfaa9ef6ac18f0"}})
+            verify_result = verify.verify_checksums(checksum_file, temp_directory)
+            self.assertTrue(verify_result.success)

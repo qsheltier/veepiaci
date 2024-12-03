@@ -1,4 +1,5 @@
 import os
+import unicodedata
 
 import hash
 
@@ -31,7 +32,7 @@ def collect_files(directory):
     for path, dirs, files in os.walk(directory):
         relative_path = path.removeprefix(directory).removesuffix("/")
         for file in files:
-            file_list.append((relative_path + "/" + file).removeprefix("/"))
+            file_list.append((relative_path + "/" + unicodedata.normalize("NFC", os.fsdecode(file))).removeprefix("/"))
     return file_list
 
 
