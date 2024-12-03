@@ -21,6 +21,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(central_window)
 
         self.checksumFileField = QtWidgets.QLineEdit()
+        self.checksumFileField.setText(self.settings.checksumFile)
         self.checksumFileField.setReadOnly(True)
         checksum_file_box = self.create_group_box(
             "Checksum File",
@@ -32,6 +33,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
         window_layout.addWidget(checksum_file_box, 0, 0)
 
         self.directoryField = QtWidgets.QLineEdit()
+        self.directoryField.setText(self.settings.directory)
         self.directoryField.setReadOnly(True)
         directory_box = self.create_group_box(
             "Directory",
@@ -43,6 +45,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
         window_layout.addWidget(directory_box, 1, 0)
 
         self.verificationResultFileField = QtWidgets.QLineEdit()
+        self.verificationResultFileField.setText(self.settings.resultFile)
         self.verificationResultFileField.setReadOnly(True)
         verification_result_file_box = self.create_group_box(
             "Verification Result",
