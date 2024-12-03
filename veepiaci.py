@@ -2,6 +2,9 @@ import sys
 
 from PySide6 import QtCore, QtWidgets
 
+import checksumfile
+from verify import verify_checksums
+
 
 class VeepiaciSettings:
     def __init__(self):
@@ -15,6 +18,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.settings = settings
         self.setWindowTitle("veepiaci")
+        self.thread_pool = QtCore.QThreadPool()
 
         central_window = QtWidgets.QWidget()
         window_layout = QtWidgets.QGridLayout(central_window)
@@ -60,6 +64,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
 
         self.start_verification_button = QtWidgets.QPushButton("Start Verification")
         self.check_if_start_button_can_be_active()
+        self.start_verification_button.clicked.connect(self.start_verification)
 
         button_box = QtWidgets.QWidget()
         button_box_layout = QtWidgets.QHBoxLayout(button_box)
@@ -119,6 +124,77 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
         button_can_be_active = button_can_be_active and (self.settings.directory != "")
         button_can_be_active = button_can_be_active and (self.settings.resultFile != "")
         self.start_verification_button.setEnabled(button_can_be_active)
+
+    @QtCore.Slot()
+    def start_verification(self):
+        checksum_file = checksumfile.read_checksum_file(self.settings.checksumFile)
+
+        verify_window = VerifyRunWindow(self)
+        verify_window.resize(800, 450)
+
+        worker = VerificationWorker(checksum_file, self.settings.directory, verify_window.on_file_hashed, verify_window.on_finished)
+        self.thread_pool.start(worker)
+
+        verify_window.exec()
+
+
+class VerificationWorker(QtCore.QRunnable):
+
+    def __init__(self, checksum_file, directory, on_file_hashed, on_finished):
+        super().__init__()
+        self.checksum_file = checksum_file
+        self.directory = directory
+        self.on_file_hashed = on_file_hashed
+        self.on_finished = on_finished
+
+    def run(self):
+        verify_checksums(self.checksum_file, self.directory, self.on_file_hashed, self.on_finished)
+
+
+class VerifyRunWindow(QtWidgets.QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.verification_finished = False
+
+        self.setWindowTitle("Verify Checksums")
+        self.progress_details = QtWidgets.QLabel()
+        self.progress_details.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignTop)
+
+        scroll_area = QtWidgets.QScrollArea()
+        scroll_area.setWidget(self.progress_details)
+        scroll_area.setWidgetResizable(True)
+
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(scroll_area, 0, 0)
+        self.setLayout(layout)
+
+    def closeEvent(self, close_event):
+        if not self.verification_finished:
+            close_event.ignore()
+            return
+        super().closeEvent(close_event)
+
+    def on_file_hashed(self, file, _, correct_hash):
+        self.progress_details.setText(self.progress_details.text() + ("✅" if correct_hash else "❌") + " " + file + "\n")
+
+    def on_finished(self, verification_result):
+        text = self.progress_details.text()
+        text += "\n"
+        text += "Verification finished. The overall result is: " + ("✅ success" if verification_result.success else "❌ failure") + "\n"
+        if verification_result.mismatches:
+            text += "\nThe following files had incorrect checksums:\n"
+            for mismatch in verification_result.mismatches:
+                text += mismatch + "\n"
+        if verification_result.missing_files:
+            text += "\nThe following files are missing:\n"
+            for missing_file in verification_result.missing_files:
+                text += missing_file + "\n"
+        if verification_result.additional_files:
+            text += "\nThe following files did not have checksums:\n"
+            for additional_file in verification_result.additional_files:
+                text += additional_file + "\n"
+        self.progress_details.setText(text)
+        self.verification_finished = True
 
 
 if __name__ == "__main__":
