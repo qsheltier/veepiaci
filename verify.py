@@ -12,12 +12,14 @@ def verify_checksums(checksum_file, directory, on_file_hashed=None, on_finished=
     for existing_file in filter(lambda f: f in files_with_checksum, existing_files):
         filename = os.path.join(directory, existing_file)
         file_hash = hash.create_hash(filename)
-        if on_file_hashed:
-            on_file_hashed(existing_file, file_hash)
         existing_hashes = checksum_file.file_checksums[existing_file]
+        hash_checks_out = True
         for (hash_to_check) in existing_hashes:
             if file_hash[hash_to_check] != existing_hashes[hash_to_check]:
                 mismatches.append(existing_file)
+                hash_checks_out = False
+        if on_file_hashed:
+            on_file_hashed(existing_file, file_hash, hash_checks_out)
     verification_result = VerificationResult(mismatches, missing_files, additional_files)
     if on_finished is not None:
         on_finished(verification_result)
