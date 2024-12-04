@@ -3,7 +3,7 @@ import sys
 from PySide6 import QtCore, QtWidgets
 
 import checksumfile
-from verify import verify_checksums
+from verify import verify_checksums, VerificationResult
 
 
 class VeepiaciSettings:
@@ -132,23 +132,35 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
         verify_window = VerifyRunWindow(self)
         verify_window.resize(800, 450)
 
-        worker = VerificationWorker(checksum_file, self.settings.directory, verify_window.on_file_hashed, verify_window.on_finished)
-        self.thread_pool.start(worker)
+        worker = VerificationWorker(checksum_file, self.settings.directory)
+        worker.file_hashed_signal.connect(verify_window.on_file_hashed)
+        worker.finished_signal.connect(verify_window.on_finished)
 
+        self.thread_pool.start(worker)
         verify_window.exec()
 
 
-class VerificationWorker(QtCore.QRunnable):
+class Mixin(QtCore.QObject):
+    file_hashed_signal = QtCore.Signal(str, dict, bool)
+    finished_signal = QtCore.Signal(VerificationResult)
 
-    def __init__(self, checksum_file, directory, on_file_hashed, on_finished):
+
+class VerificationWorker(QtCore.QRunnable, Mixin):
+
+    def __init__(self, checksum_file, directory):
         super().__init__()
+
         self.checksum_file = checksum_file
         self.directory = directory
-        self.on_file_hashed = on_file_hashed
-        self.on_finished = on_finished
 
     def run(self):
         verify_checksums(self.checksum_file, self.directory, self.on_file_hashed, self.on_finished)
+
+    def on_file_hashed(self, file, hashes, correct):
+        self.file_hashed_signal.emit(file, hashes, correct)
+
+    def on_finished(self, verification_result):
+        self.finished_signal.emit(verification_result)
 
 
 class VerifyRunWindow(QtWidgets.QDialog):
@@ -174,9 +186,11 @@ class VerifyRunWindow(QtWidgets.QDialog):
             return
         super().closeEvent(close_event)
 
+    @QtCore.Slot(str, dict, bool)
     def on_file_hashed(self, file, _, correct_hash):
         self.progress_details.setText(self.progress_details.text() + ("✅" if correct_hash else "❌") + " " + file + "\n")
 
+    @QtCore.Slot(VerificationResult)
     def on_finished(self, verification_result):
         text = self.progress_details.text()
         text += "\n"
