@@ -167,9 +167,11 @@ class VerifyRunWindow(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.verification_finished = False
+        self.lines = []
 
         self.setWindowTitle("Verify Checksums")
-        self.progress_details = QtWidgets.QLabel()
+        self.progress_details = QtWidgets.QTextEdit()
+        self.progress_details.setReadOnly(True)
         self.progress_details.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignTop)
 
         scroll_area = QtWidgets.QScrollArea()
@@ -188,27 +190,29 @@ class VerifyRunWindow(QtWidgets.QDialog):
 
     @QtCore.Slot(str, dict, bool)
     def on_file_hashed(self, file, _, correct_hash):
-        self.progress_details.setText(self.progress_details.text() + ("✅" if correct_hash else "❌") + " " + file + "\n")
+        self.lines += [("✅" if correct_hash else "❌") + " " + file]
+        self.write_lines()
 
     @QtCore.Slot(VerificationResult)
     def on_finished(self, verification_result):
-        text = self.progress_details.text()
-        text += "\n"
-        text += "Verification finished. The overall result is: " + ("✅ success" if verification_result.success else "❌ failure") + "\n"
+        self.lines += ["", "Verification finished. The overall result is: " + ("✅ success" if verification_result.success else "❌ failure")]
         if verification_result.mismatches:
-            text += "\nThe following files had incorrect checksums:\n"
+            self.lines += ["", "The following files had incorrect checksums:"]
             for mismatch in verification_result.mismatches:
-                text += mismatch + "\n"
+                self.lines += [mismatch]
         if verification_result.missing_files:
-            text += "\nThe following files are missing:\n"
+            self.lines += ["", "The following files are missing:"]
             for missing_file in verification_result.missing_files:
-                text += missing_file + "\n"
+                self.lines += [missing_file]
         if verification_result.additional_files:
-            text += "\nThe following files did not have checksums:\n"
+            self.lines += ["", "The following files did not have checksums:"]
             for additional_file in verification_result.additional_files:
-                text += additional_file + "\n"
-        self.progress_details.setText(text)
+                self.lines += [additional_file]
         self.verification_finished = True
+        self.write_lines()
+
+    def write_lines(self):
+        self.progress_details.setText("<html>\n" + "\n".join(map(lambda line: "<div style='line-height: 1.1'>" + (line if line else "&nbsp;") + "</div>", self.lines)) + "</html>")
 
 
 if __name__ == "__main__":
