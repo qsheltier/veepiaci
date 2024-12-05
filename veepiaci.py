@@ -183,12 +183,13 @@ class VerifyRunWindow(QtWidgets.QDialog):
         scroll_area.setWidget(self.progress_details)
         scroll_area.setWidgetResizable(True)
 
-        close_button = QtWidgets.QPushButton("Close")
-        close_button.clicked.connect(self.close)
+        self.close_button = QtWidgets.QPushButton("Close")
+        self.close_button.setDisabled(True)
+        self.close_button.clicked.connect(self.close)
 
         layout = QtWidgets.QGridLayout()
         layout.addWidget(scroll_area, 0, 0)
-        layout.addWidget(close_button, 1, 0, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
+        layout.addWidget(self.close_button, 1, 0, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
         self.setLayout(layout)
 
     def keyPressEvent(self, event):
@@ -229,6 +230,7 @@ class VerifyRunWindow(QtWidgets.QDialog):
             for additional_file in verification_result.additional_files:
                 self.lines += [additional_file]
         self.verification_finished = True
+        self.close_button.setEnabled(True)
         self.write_lines()
 
     def write_lines(self):
