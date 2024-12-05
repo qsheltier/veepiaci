@@ -120,3 +120,11 @@ class VerifyTest(unittest.TestCase):
             checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427e"}, "ümläut.txt": {"md5": "e2c865db4162bed963bfaa9ef6ac18f0"}})
             verify_result = verify.verify_checksums(checksum_file, temp_directory)
             self.assertTrue(verify_result.success)
+
+    def test_verify_sends_start_of_verification_event_before_first_file(self):
+        events = []
+        with tempfile.TemporaryDirectory() as temp_directory:
+            create_empty_file(temp_directory)
+            checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427e"}})
+            verify.verify_checksums(checksum_file, temp_directory, on_started=lambda d: events.append(d), on_file_hashed=lambda f, h, c: events.append(f))
+        self.assertEqual(events, [temp_directory, "empty.dat"])

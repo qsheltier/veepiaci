@@ -4,7 +4,9 @@ import unicodedata
 import hash
 
 
-def verify_checksums(checksum_file, directory, on_file_hashed=None, on_finished=None):
+def verify_checksums(checksum_file, directory, on_started=None, on_file_hashed=None, on_finished=None):
+    if on_started:
+        on_started(directory)
     existing_files = collect_files(directory)
     files_with_checksum = checksum_file.file_checksums.keys()
     missing_files = [file for file in filter(lambda f: f not in existing_files, files_with_checksum)]
