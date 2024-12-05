@@ -183,8 +183,12 @@ class VerifyRunWindow(QtWidgets.QDialog):
         scroll_area.setWidget(self.progress_details)
         scroll_area.setWidgetResizable(True)
 
+        close_button = QtWidgets.QPushButton("Close")
+        close_button.clicked.connect(self.close)
+
         layout = QtWidgets.QGridLayout()
         layout.addWidget(scroll_area, 0, 0)
+        layout.addWidget(close_button, 1, 0, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
         self.setLayout(layout)
 
     def keyPressEvent(self, event):
