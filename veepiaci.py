@@ -133,6 +133,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
         verify_window.resize(800, 450)
 
         worker = VerificationWorker(checksum_file, self.settings.directory)
+        worker.started_signal.connect(verify_window.on_started)
         worker.file_hashed_signal.connect(verify_window.on_file_hashed)
         worker.finished_signal.connect(verify_window.on_finished)
 
@@ -141,6 +142,7 @@ class VeepiaciMainWindow(QtWidgets.QMainWindow):
 
 
 class Mixin(QtCore.QObject):
+    started_signal = QtCore.Signal(str)
     file_hashed_signal = QtCore.Signal(str, dict, bool)
     finished_signal = QtCore.Signal(VerificationResult)
 
@@ -154,7 +156,10 @@ class VerificationWorker(QtCore.QRunnable, Mixin):
         self.directory = directory
 
     def run(self):
-        verify_checksums(self.checksum_file, self.directory, on_file_hashed=self.on_file_hashed, on_finished=self.on_finished)
+        verify_checksums(self.checksum_file, self.directory, on_started=self.on_started, on_file_hashed=self.on_file_hashed, on_finished=self.on_finished)
+
+    def on_started(self, directory):
+        self.started_signal.emit(directory)
 
     def on_file_hashed(self, file, hashes, correct):
         self.file_hashed_signal.emit(file, hashes, correct)
@@ -193,6 +198,11 @@ class VerifyRunWindow(QtWidgets.QDialog):
             close_event.ignore()
             return
         super().closeEvent(close_event)
+
+    @QtCore.Slot(str)
+    def on_started(self, directory):
+        self.lines = ["Starting verification in " + directory + "…"]
+        self.write_lines()
 
     @QtCore.Slot(str, dict, bool)
     def on_file_hashed(self, file, _, correct_hash):
