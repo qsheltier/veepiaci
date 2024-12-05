@@ -65,7 +65,7 @@ class VerifyTest(unittest.TestCase):
             create_empty_file(temp_directory)
             create_file_with_data(temp_directory)
             checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427e"}, "data.dat": {"md5": "e2c865db4162bed963bfaa9ef6ac18f0"}})
-            verify.verify_checksums(checksum_file, temp_directory, lambda f, h, c: hashed_files.append(f))
+            verify.verify_checksums(checksum_file, temp_directory, on_file_hashed=lambda f, h, c: hashed_files.append(f))
             self.assertCountEqual(hashed_files, ["data.dat", "empty.dat"])
 
     def test_verify_calls_event_handler_for_every_file_it_hashes_with_result_of_hash_check(self):
@@ -74,7 +74,7 @@ class VerifyTest(unittest.TestCase):
             create_empty_file(temp_directory)
             create_file_with_data(temp_directory)
             checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427f"}, "data.dat": {"md5": "e2c865db4162bed963bfaa9ef6ac18f0"}})
-            verify.verify_checksums(checksum_file, temp_directory, lambda f, h, c: hashed_files.append(f + " " + str(c)))
+            verify.verify_checksums(checksum_file, temp_directory, on_file_hashed=lambda f, h, c: hashed_files.append(f + " " + str(c)))
             self.assertCountEqual(hashed_files, ["data.dat True", "empty.dat False"])
 
     def test_verify_does_not_call_event_handler_when_a_file_does_not_have_a_hash(self):
@@ -83,7 +83,7 @@ class VerifyTest(unittest.TestCase):
             create_empty_file(temp_directory)
             create_file_with_data(temp_directory)
             checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427e"}})
-            verify.verify_checksums(checksum_file, temp_directory, lambda f, h, c: hashed_files.append(f))
+            verify.verify_checksums(checksum_file, temp_directory, on_file_hashed=lambda f, h, c: hashed_files.append(f))
             self.assertEqual(hashed_files, ["empty.dat"])
 
     def test_verify_does_not_call_event_handler_when_a_file_does_not_exist(self):
@@ -91,7 +91,7 @@ class VerifyTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_directory:
             create_file_with_data(temp_directory)
             checksum_file = ChecksumFile("test", {"empty.dat": {"md5": "d41d8cd98f00b204e9800998ecf8427e"}, "data.dat": {"md5": "e2c865db4162bed963bfaa9ef6ac18f0"}})
-            verify.verify_checksums(checksum_file, temp_directory, lambda f, h, c: hashed_files.append(f))
+            verify.verify_checksums(checksum_file, temp_directory, on_file_hashed=lambda f, h, c: hashed_files.append(f))
             self.assertEqual(hashed_files, ["data.dat"])
 
     def test_verify_calls_finish_handler_after_files(self):

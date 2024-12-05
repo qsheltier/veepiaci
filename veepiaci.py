@@ -154,7 +154,7 @@ class VerificationWorker(QtCore.QRunnable, Mixin):
         self.directory = directory
 
     def run(self):
-        verify_checksums(self.checksum_file, self.directory, self.on_file_hashed, self.on_finished)
+        verify_checksums(self.checksum_file, self.directory, on_file_hashed=self.on_file_hashed, on_finished=self.on_finished)
 
     def on_file_hashed(self, file, hashes, correct):
         self.file_hashed_signal.emit(file, hashes, correct)
