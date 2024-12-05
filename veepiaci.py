@@ -182,6 +182,12 @@ class VerifyRunWindow(QtWidgets.QDialog):
         layout.addWidget(scroll_area, 0, 0)
         self.setLayout(layout)
 
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key.Key_W and event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
+            self.close()
+        else:
+            super().keyPressEvent(event)
+
     def closeEvent(self, close_event):
         if not self.verification_finished:
             close_event.ignore()
