@@ -6,10 +6,21 @@ from PySide6 import QtWidgets, QtCore
 from verify import VerificationResult
 
 
+@dataclass
+class TimestampedLine:
+    text: str
+    date: datetime
+
+    def __init__(self, text, date=None):
+        self.text = text
+        self.date = date if date else datetime.now()
+
+
 class VerifyRunWindow(QtWidgets.QDialog):
 
     def __init__(self, parent):
         super().__init__(parent)
+        self.verification_start = datetime.now()
         self.verification_finished = False
         self.lines = []
 
@@ -49,6 +60,7 @@ class VerifyRunWindow(QtWidgets.QDialog):
 
     @QtCore.Slot(str)
     def on_started(self, directory):
+        self.verification_start = datetime.now()
         self.add_lines("Starting verification in " + directory + "…")
         self.write_lines()
 
@@ -77,10 +89,11 @@ class VerifyRunWindow(QtWidgets.QDialog):
         self.write_lines()
 
     def write_lines(self):
-        self.progress_details.setText("<html>\n" + "\n".join(map(lambda line: "<div style='line-height: 1.1'>" + line.date.strftime("%Y-%m-%d %H:%M:%S ") + line.text + "</div>", self.lines)) + "</html>")
+        self.progress_details.setText("<html>\n" + "\n".join(map(self.convert_line_to_html, self.lines)) + "</html>")
+
+    def convert_line_to_html(self, line: TimestampedLine):
+        return "<div style='line-height: 1.1'>" + format_timedelta(line.date - self.verification_start) + " " + line.text + "</div>"
 
 
-@dataclass
-class TimestampedLine:
-    text: str
-    date: datetime = datetime.now()
+def format_timedelta(timedelta):
+    return "%02d:%02d:%02d" % (timedelta.total_seconds() / 3600, (timedelta.total_seconds() / 60) % 60, timedelta.total_seconds() % 60)
