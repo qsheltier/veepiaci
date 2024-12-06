@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from PySide6 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore, QtGui
 
 from verify import VerificationResult
 
@@ -90,6 +90,7 @@ class VerifyRunWindow(QtWidgets.QDialog):
 
     def write_lines(self):
         self.progress_details.setText("<html>\n" + "\n".join(map(self.convert_line_to_html, self.lines)) + "</html>")
+        self.progress_details.moveCursor(QtGui.QTextCursor.MoveOperation.End)
 
     def convert_line_to_html(self, line: TimestampedLine):
         if line.text:
