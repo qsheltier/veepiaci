@@ -92,7 +92,9 @@ class VerifyRunWindow(QtWidgets.QDialog):
         self.progress_details.setText("<html>\n" + "\n".join(map(self.convert_line_to_html, self.lines)) + "</html>")
 
     def convert_line_to_html(self, line: TimestampedLine):
-        return "<div style='line-height: 1.1'>" + format_timedelta(line.date - self.verification_start) + " " + line.text + "</div>"
+        if line.text:
+            return "<div style='line-height: 1.1'>" + format_timedelta(line.date - self.verification_start) + " " + line.text + "</div>"
+        return "<hr/>"
 
 
 def format_timedelta(timedelta):
